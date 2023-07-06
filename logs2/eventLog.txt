@@ -1,0 +1,2 @@
+2023-06-11	18:22:31	28f31c80-3adf-4fdf-9529-b3f863f5fa4b	Log event fired!
+2023-06-11	18:26:12	55bf9af2-6f14-469f-8e8a-186c7f91368c	Log event emitted!

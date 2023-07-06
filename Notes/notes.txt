@@ -1,0 +1,50 @@
+
+JWT = JASON WEB TOKEN: This can be considered to be a form of user Identification That is issued after the initrial user Authentication takes place.
+ when a user completes their login process and are authenticated, a rest api will issue the client application an Access and Refresh Token.
+
+Access Token is given a short time before it expires, possibly 5mins - 15mins and
+A Refresh Token  is given a longer Duration before it expires possibly several hours, a day, or even days.
+While no security measures are perfect we still want to consider the risk of Cross-Site Scripting and Cross-Site Request Forgery.
+
+
+Access Token should be stored in Memory, not Local Storage or Cookies.
+When to Issue Access Token:
+1.Issued at Authorization.
+2.Client/User Application can then access Rest Api protected Routes with the Access Token (Users will Uses for Api Access until expires),
+2. Verified the Access Token with Middleware everytime the Access Token is used to make a request,
+3. When Access Token Expires, The user App will need to send their Refresh Token to our Api Refresh endpoint to get a new Access Token. (Issued at Refresh Request)
+
+Refresh Token should be sent as httpOnly cookie, Not accessible via JavaScript, must have expiry at some point.
+
+When to Issue Refresh Token:
+1.Issued at Authorization.
+2. The Rest Api Refresh endpoint will verify the Token and Cross Reference the Refresh Token in Our Database too,
+storing a Reference to the Refresh Token in the database will allow  Refresh Token to be Terminated early if the user decides to Logout.
+Referesh Token need to be allowed to expire so Indefinite access cannot be gained.
+
+
+When working with .env file add them to .gitignore when you want to host, whichever host we are working with they should have a way to put the environment variables into their hosting servers,
+then you can pull those out.
+
+
+
+Databases:
+Traditional Sequel Databases are built in a relational Structure, related tables reference each other with Joints,
+this relational table also normalize the data, that means data is not duplicated in the table.
+This is the D.R.Y principle which means don't repeat yourself.
+However, with No Sequel Databases like MongoDB, you can throw that all away.
+Mongo Db stores data in Collections. The Individual records in the Collections are called documents.
+Documents have a key/value structure, and look a lot like json. A collection holds all of the data of about a user for example,
+Instead of breaking it into related tables, and likewise duplicating and distributing the data where deem necessary and a no sequel structure is permitted.
+
+Advantages No Sequel Database:
+Performance:  is key, the speed at which a collection is queried is fast.
+Flexibility: It is very easy to make structural changes, like adding a new field and not reeking Havoc in your total strucure, It is
+much like adding a new property to an Object.
+Scalability: No sequel can support large databases with high request rate at a very low latency.
+Usability: You can get up and running easily with Mongo Db
+
+
+
+
+

@@ -19,6 +19,6 @@ router
     verifyRoles(ROLES_LIST.Admin),
     employeesController.deleteEmployee
   );
-router.route('/:id').get(employeesController.getEmployee);
+router.route('/employees/:id').get(employeesController.getEmployee);
 
 module.exports = router;

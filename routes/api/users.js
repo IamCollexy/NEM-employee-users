@@ -8,17 +8,20 @@ router
   .route('/')
   .get(usersController.getAllUsers)
   .post(
-    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
+    // verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
     usersController.createUser
   )
   .put(
     verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
     usersController.updateUserById
-  )
+  );
+
+router
+  .route('/users/:id')
+  .get(usersController.getUserById)
   .delete(
     verifyRoles(ROLES_LIST.Admin),
     usersController.deleteUserById
   );
-router.route('/:id').get(usersController.getEmployee);
 
 module.exports = router;

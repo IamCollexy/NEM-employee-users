@@ -1,4 +1,5 @@
-const User = require('./models/User');
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -25,24 +26,47 @@ const getUserById = async (req, res) => {
 };
 
 // Create a new user
+
 const createUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, roles } = req.body;
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: 'Username and Password are required.' });
+  }
+
   try {
-    const user = await User.create({ username, password });
-    res.status(201).json(user);
+    const duplicateUser = await User.findOne({ username }).exec();
+    if (duplicateUser) {
+      return res.sendStatus(409); // Conflict
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      username,
+      roles,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      success: `New user: ${user.username} created!`,
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Update a user by ID
 const updateUserById = async (req, res) => {
-  const { id } = req.params;
-  const { username, password } = req.body;
+  const { id, username, password, roles } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
     const user = await User.findByIdAndUpdate(
       id,
-      { username, password },
+      { username, password: hashedPassword, roles },
       { new: true }
     );
     if (!user) {
@@ -56,15 +80,31 @@ const updateUserById = async (req, res) => {
 
 // Delete a user by ID
 const deleteUserById = async (req, res) => {
-  const { id } = req.params;
   try {
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    const userId = req.params.id;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ message: 'ID parameter is required.' });
     }
-    res.sendStatus(204);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(204)
+        .json({ message: `No user matches ID ${userId}` });
+    }
+
+    const result = await User.deleteOne({ _id: userId });
+    console.log(result);
+    res
+      .status(200)
+      .json({ message: `Deleted user: ${user.username}` });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 };
 

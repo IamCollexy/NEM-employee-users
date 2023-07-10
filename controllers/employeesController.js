@@ -13,6 +13,7 @@ const getAllEmployees = async (req, res) => {
   // Using Employee json model
   // res.json(data.employees);
   // Using Employee Model
+
   const employees = await Employee.find();
   if (!employees)
     return res.status(204).json({ message: 'No employees found' });
@@ -49,12 +50,23 @@ const createNewEmployee = async (req, res) => {
   //  };
 
   // Using Employee model
+  const { firstname, lastname } = req.body;
+
   if (!req?.body?.firstname || !req?.body?.lastname) {
     return res
       .status(400)
       .json({ message: 'First and Last names are required' });
   }
   try {
+    const existingEmployee = await Employee.findOne({
+      firstname,
+      lastname,
+    }).exec();
+    if (existingEmployee) {
+      return res
+        .status(409)
+        .json({ error: 'Employee already exists' });
+    }
     const result = await Employee.create({
       firstname: req.body.firstname,
       lastname: req.body.lastname,
@@ -72,6 +84,7 @@ const updateEmployee = async (req, res) => {
   // );
 
   // Using Employee Model
+
   if (!req?.body?.id) {
     return res
       .status(400)
@@ -136,12 +149,12 @@ const deleteEmployee = async (req, res) => {
       .status(204)
       .json({ message: `No employee matches ID ${req.body.id}` });
   }
-  if (req.body?.firstname) employee.firstname = req.body.firstname;
-  if (req.body?.lastname) employee.lastname = req.body.lastname;
+
   const result = await employee.deleteOne({
     _id: req.body.id,
   });
   res.json(result);
+  console.log(` Deleted user: ${result}`);
 };
 
 const getEmployee = async (req, res) => {

@@ -15,6 +15,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const handleLogin = async (req, res) => {
+  const cookies = req.cookies;
   const { user, password } = req.body;
   if (!user && !password)
     return res
@@ -34,7 +35,7 @@ const handleLogin = async (req, res) => {
   //evaluate password
   const match = await bcrypt.compare(password, foundUser.password);
   if (match) {
-    const roles = Object.values(foundUser.roles);
+    const roles = Object.values(foundUser.roles).filter(Boolean);
     // create JWTs to use with the other routes that we want protected
     const accessToken = jwt.sign(
       {
@@ -45,18 +46,18 @@ const handleLogin = async (req, res) => {
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: '2m',
+        expiresIn: '3m',
       }
     );
-    const refreshToken = jwt.sign(
+    const newRefreshToken = jwt.sign(
       { username: foundUser.username },
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: '1d',
       }
     );
-    //Saving refreshToken with current user
 
+    //Saving refreshToken with current user
     // Using User json model
     // const otherUsers = userDB.users.filter(
     //   (person) => person.username !== foundUser.username
@@ -70,11 +71,26 @@ const handleLogin = async (req, res) => {
     // set Cookie as httpOnly so it is not available by JavaScript ensuring  our Refresh Token is safe.
 
     // Using User model
-    foundUser.refreshToken = refreshToken;
+
+    const newRefreshTokenArray = !cookies?.jwt
+      ? foundUser.refreshToken
+      : foundUser.refreshToken.filter((rt) => rt !== cookies.jwt);
+
+    if (cookies?.jwt)
+      res.clearCookie('jwt', {
+        httpOnly: true,
+        sameSite: 'None',
+        secure: true,
+      });
+    foundUser.refreshToken = [
+      ...newRefreshTokenArray,
+      newRefreshToken,
+    ];
     const result = await foundUser.save();
     console.log(result);
+    console.log(roles);
 
-    res.cookie('jwt', refreshToken, {
+    res.cookie('jwt', newRefreshToken, {
       httpOnly: true,
       sameSite: 'None',
       // When Testing with Thunder Client,
@@ -86,7 +102,7 @@ const handleLogin = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
     // store access token in memory
-    res.json({ accessToken });
+    res.json({ roles, accessToken });
   } else {
     res.sendStatus(401);
   }

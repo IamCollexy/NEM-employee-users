@@ -45,9 +45,11 @@ app.use('/auth', require('./routes/api/auth'));
 //  and that will issue an access token once the access token has expired.
 app.use('/refresh', require('./routes/api/refresh'));
 app.use('/logout', require('./routes/api/logout'));
+
 // code works like a waterfall, any route which we do not want to have verifyJWT, we need to have above this line
-app.use(verifyJWT);
+// app.use(verifyJWT);
 app.use('/employees', require('./routes/api/employees'));
+app.use('/users', require('./routes/api/users'));
 
 // Handle 404 Not Found
 app.all('*', (req, res) => {

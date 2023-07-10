@@ -9,12 +9,10 @@
 
 // Using User Model
 const User = require('../models/User');
-
 // Used when you are writing to files
 // const fsPromises = require('fs').promises;
 // const path = require('path');
 const bcrypt = require('bcrypt');
-
 const handleNewUser = async (req, res) => {
   const { user, password } = req.body;
   if (!user || !password)
